@@ -1,9 +1,13 @@
 Revision history for Catalyst-View-ByCode
 
+0.08    2010-03-27
+        * eliminated trunk/ directory
+        * moved to Module::Install
+        * fixed a test that failed on Windows because path separator
+          was hard coded and wrong for this platform
+        
 0.07    2010-03-13
-        * added CamelCase and lower_case conversion to dashed-names
-          for tag attribute names like 'data-target' and attribute values
-          like style => {zIndex => 99, fontFamily => 'Arial'}
+        * docs added, first CPAN upload
 
 0.06    2010-03-01
         * changed version to 0.06
