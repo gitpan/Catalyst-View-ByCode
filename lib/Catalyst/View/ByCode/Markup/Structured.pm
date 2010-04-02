@@ -1,4 +1,5 @@
 package Catalyst::View::ByCode::Markup::Structured;
+$Catalyst::View::ByCode::Markup::Structured::VERSION = '0.10';
 use Moose;
 use MooseX::AttributeHelpers;
 extends 'Catalyst::View::ByCode::Markup::Element';

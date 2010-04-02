@@ -1,4 +1,5 @@
 package Catalyst::View::ByCode::Markup::EscapedText;
+$Catalyst::View::ByCode::Markup::EscapedText::VERSION = '0.10';
 use Moose;
 extends 'Catalyst::View::ByCode::Markup::Element';
 

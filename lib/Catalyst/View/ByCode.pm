@@ -33,13 +33,17 @@ use UUID::Random;
 use Path::Class::File;
 use File::Spec;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 our $compiling_package; # local() ized during a compile
 
 =head1 NAME
 
 Catalyst::View::ByCode - Templating using pure Perl code
+
+=head1 VERSION
+
+version 0.10
 
 =head1 SYNOPSIS
 
@@ -76,8 +80,8 @@ Catalyst::View::ByCode - Templating using pure Perl code
             body {
                 div header.noprint {
                     ul.topnav {
-                        li {'home'};
-                        li {'surprise'};
+                        li { 'home' };
+                        li { 'surprise' };
                     };
                 };
                 div content {
@@ -185,7 +189,7 @@ generates a E<lt>qE<gt> tag
 
 =item strike
 
-generates a E<lt>s<gt> tag
+generates a E<lt>sE<gt> tag
 
 =item map_tag
 
@@ -277,9 +281,14 @@ After a plus prefixed name all following names are added to the class list. A
 list of class names without a plus/minus prefix will start with an empty class
 list and then append all subsequentially following names.
 
-    div.foo { class 'abc def ghi' };             will yield 'abc def ghi'
-    div.foo { class '+def xyz' };                will yield 'foo def xyz'
-    div.foo { class '-foo +bar' };               will yield 'bar'
+    # will yield 'abc def ghi'
+    div.foo { class 'abc def ghi' };
+    
+    # will yield 'foo def xyz'
+    div.foo { class '+def xyz' };
+    
+    # will yield 'bar'
+    div.foo { class '-foo +bar' };
 
 =item on handler => 'some javascript code'
 
@@ -340,13 +349,193 @@ to forward stringification to their class-defined code.
 =back
 
 
-=head2 Special Methods
+=head2 Exported subs
 
 =over
 
+=item attr
+
+Setter or Getter for attribute values. Using the C<attr> sub refers to the
+latest open tag and sets or gets its attribute(s):
+
+    div {
+        attr(style => 'foo:bar');  # set 'style' attribute
+        attr('id') # get 'id' attribute (or undef)
+        
+        ... more things ...
+        a {
+            attr(href => 'http://foo.bar'); # refers to 'a' tag
+        };
+        
+        attr(lang => 'de'); # sets attribute in 'div' tag
+    };
+
+=item block
+
+define a block that may be uses like a tag. If a block is defined in a
+package, it is automatically added to the package's C<@EXPORT> array.
+
+    # define a block
+    block navitem {
+        my $id = attr('id'); # get the block's ID attribute (or undef)
+        my $href = attr('href');
+        li {
+            id $id if ($id);
+            a(href => $href || 'http://foo.bar') {
+                block_content;
+            };
+        };
+    };
+    
+    # use a block like a tag
+    block some_id (href => 'http://bar.baz') {
+        # this gets rendered by block_content() -- see above
+        'some text or other content';
+    }
+    
+    # will generate:
+    <li id="some_id">
+        <a href="http://bar.baz">some text or other content</a>
+    </li>
+
+=item block_content
+
+a simple shortcut to render the content of the block at a given point. See
+example above.
+
+=item c
+
+holds the content of the C<$c> variable. Simple write C<c->some_method>
+instead of C<$c->some_method>.
+
+=item class
+
+provides a shortcut for defining class names. All examples below will generate
+the same markup:
+
+    div { class 'class_name'; };
+    div { attr class => 'class_name'; };
+    div { attr('class', 'class_name'); };
+    div.class_name {};
+
 =item doctype
 
+a very simple way to generate a DOCTYPE declatation. Without any arguments, a
+HTML 4.0 doctype declaration will be generated. The arguments (if any) will
+consist of either of the words C<html> or C<xhtml> optionally followed by one
+or more version digits.
+
+some examples:
+
+    doctype;                # HTML 4.0
+    doctype 'html';         # HTML 4.01
+    doctype html => 4;      # HTML 4.01
+    doctype 'html 4';       # HTML 4.01
+    doctype 'html 4s';      # HTML 4.01 strict
+    doctype 'html 4strict'; # HTML 4.01 strict
+
+    doctype 'xhtml';        # XHTML 1.0
+    doctype 'xhtml 1 1';    # XHTML 1.0
+
+=item id
+
+provides a shortcut for defining id names. All examples here will generate the
+same markup:
+
+    div { id 'id_name'; };
+    div { attr id => 'id_name'; };
+    div { attr('id', 'id_name'); };
+    div id_name {};
+
 =item load
+
+an easy way to include assets into a page. Assets currently are JavaScript or
+CSS. The first argument to this sub specifies the kind of asset, the second
+argument is the URI to load the asset from.
+
+Some examples will clearify:
+
+    load js => '/static/js/jquery.js';
+    load css => '/static/css/site.css';
+
+If you plan to develop your JavaScript or CSS files as multiple files and like
+to combine them at request-time (with caching of course...), you might like to
+use L<Catalyst::Controller::Combine>. If your controllers are named C<Js> and
+C<Css>, this will work as well:
+
+    load Js => 'name_of_combined.js';
+
+=item on
+
+provides a syntactic sugar for generating inline JavaScript handlers.
+
+    a(href => '#') {
+        on click => q{alert('you clicked me'); return false};
+    };
+
+=item params
+
+generates a series of C<param> tags.
+
+    applet ( ... ) {
+        params(
+            quality => 'foo',
+            speed => 'slow',
+        );
+    };
+
+=item stash
+
+is a shortcut for C<c->stash>.
+
+=item template
+
+essentially generates a sub named C<RUN> as the main starting point of every
+template file. Both constructs will be identical:
+
+    sub RUN {
+        div { ... };
+    }
+    
+    template {
+        div { ... };
+    };
+
+Be careful to add a semicolon after the C<template> definition if you add code
+after it!!!
+
+=item yield
+
+Without arguments, C<yield> forwards exection to the next template in the
+ordinary execution chain. Typically this is the point in a wrapper template
+that includes the main template.
+
+With an argument, it forwards execution to the template given as the argument.
+These values are possible:
+
+=over
+
+=item just a symbolic name
+
+if a symbolic name is given, this name is searched in the C<<stash->{yield}->{...} >>
+hashref. If it is found, the file-name or subref stored there will be executed
+and included at the given point.
+
+=item a path name
+
+if a template file exists at the path name given as the argument, this
+template is compiled and executed.
+
+=item a code-ref
+
+a code ref is directly executed.
+
+=back
+
+If yield is not able to find something, simply nothing happens. This behavior
+could be useful to add hooks at specified positions in your markup that may
+get filled when needed.
+
 
 =back
 
@@ -354,7 +543,10 @@ to forward stringification to their class-defined code.
 
 You might build a reusable block line the following calls:
 
-    block 'block_name' => sub { ... };
+    block 'block_name', sub { ... };
+    
+    # or:
+    block block_name => sub { ... };
     
     # or shorter:
     block block_name { ... };
@@ -368,6 +560,7 @@ the special sub C<block_content>. A simple example makes this clearer:
 
     # define a block:
     block infobox {
+        # attr() values may be read before the first opening tag
         my $headline = attr('headline') || 'untitled';
         my $id = attr('id');
         my $class = attr('class');
@@ -410,6 +603,194 @@ A simple configuration of a derived Controller could look like this:
         # all these modules are use()'d automatically
         include => [Some::Module Another::Package],
     );
+
+By default a typical standard configuration setting is constructed by issuing
+the Helper-Module. It looks like this and describes all default settings:
+
+    __PACKAGE__->config(
+        # # Change default
+        # extension => '.pl',
+        # 
+        # # Set the location for .pl files
+        # root_dir => 'root/bycode',
+        # 
+        # # This is your wrapper template located in the 'root_dir'
+        # wrapper => 'wrapper.pl',
+        #
+        # # specify packages to use in every template
+        # include => [ qw(My::Package::Name Other::Package::Name) ]
+    );
+
+The following configuration options are available:
+
+=over
+
+=item root_dir
+
+With this option you may define a location that is the base of all template
+files. By default, the directory F<root/bycode> inside your application will
+be used.
+
+=item extension
+
+This is the default file extension for template files. As an example, if your
+Controller class is named C<MyController> and your action method calls
+C<MyAction> then by default a template located at
+F<root_dir/mycontroller/myaction.pl> will get used to render your markup. The
+path and file name will get determined by concatenating the
+controller-namespace, the action namespace and the extension configuration
+directive.
+
+If you like to employ another template, you may specifiy a different path
+using the stash variable C<template>. See L<STASH VARIABLES> below.
+
+=item wrapper
+
+A wrapper is a template that is rendered before your main template and
+includes your main template at a given point. It "wraps" something around your
+template. This might be useful if you like to avoid repeating the standard
+page-setup code for every single page you like to generate.
+
+The default wrapper is named F<wrapper.pl> and is found directoy inside root_dir.
+
+See L<TRICKS/Using a wrapper> below.
+
+=item include
+
+As every template is a perl module, you might like to add other modules using
+Perl's C<use> directive. Well, you may do that at any point inside your
+template. However, if you repeatedly need the same modules, you could simply
+add them as a hashref using this configuration option.
+
+=back
+
+=head1 STASH VARIABLES
+
+The following stash variables are used by C<Catalyst::View::ByCode>:
+
+=over
+
+=item template
+
+If you like to override the default behavior, you can directly specify the
+template containing your rendering. Simply enter a relative path inside the
+root directory into this stash variable.
+
+If the template stash variable is left empty, the template used to render your
+markup will be determined by concatenating the action's namespace and the
+extension.
+
+=item wrapper
+
+Overriding the default wrapper is the job of this stash variable. Simply
+specify a relative path to a wrapping template into this stash variable.
+
+=item yield
+
+Yielding is a powerful mechanism. The C<yield> stash variable contains a
+hashref that contains a template or an array-ref of templates for certain
+keys. Every template might be a path name leading to a template or a code-ref
+able that should be executed as the rendering code.
+
+C<$c->stash->{yield}->{content}> is an entry that is present by default. It
+contains in execution order the wrapper and the template to get executed.
+
+Other keys may be defined and populated in a similar way in order to provide
+hooks to magic parts of your markup generation.
+
+See L<TRICKS/Setting hooks at various places> below.
+
+=back
+
+=head1 TRICKS
+
+=head2 Using a wrapper
+
+If you construct a website that has lots of pages using the same layout, a
+wrapper will be your friend. Using the default settings, a simple file
+F<wrapper.pl> sitting in the root directory of your templates will do the job.
+As two alternatives you could set the C<$c->stash->{wrapper}> variable to
+another path name or specify a wrapper path as a config setting.
+
+    # wrapper.pl
+    html {
+        head {
+            # whatever you need
+        };
+        body {
+            # maybe heading, etc.
+            
+            # include your template here
+            yield; 
+        };
+    };
+
+=head2 Setting hooks at various places
+
+If you need to sometimes add things at different places, simply mark these positions like:
+
+    # in your wrapper:
+    html {
+        head {
+            # whatever you need
+            
+            # a hook for extra headings
+            yield 'head_extras';
+        };
+        body {
+            # a hook for something at the very beginning
+            yield 'begin';
+            
+            # maybe heading, etc.
+            
+            # a hook for something after your navigation block
+            yield 'after_navigation';
+            
+            # include your template here
+            yield; 
+            
+            # a hook for something after your content
+            yield 'end';
+        };
+    };
+    
+    # in an action of your controller:
+    $c->stash->{yield}->{after_navigation} = 'path/to/foo.pl';
+
+In the example above, some hooks are defined. In a controller, for the hook
+C<after_navigation>, a path to a template is filled. This template will get
+executed at the specified position and its content added before continuing
+with the wrapper template.
+
+=head2 Avoiding repetitions
+
+TODO: describe include directive
+
+=head2 Including FormFu or FormHandler
+
+TODO: example of stringification
+
+=head2 Create your own error page
+
+=head2 Using ByCode markup for other things.
+
+Very simple:
+
+    # in an action of your controller:
+    my $html = $c->forward('View::ByCode', render => [qw(list of files)]);
+
+=head2 Shortcuts
+
+TODO: input(disabled => 1) instead of input(disabled => 'disabled')
+
+TODO: input(checked => 1) instead of input(disabled => 'checked')
+
+TODO: option(selected => 1) instead of option(selected => 'selected')
+
+    some_tag.some_class {
+        class '+another_class';
+    }
+
 
 =head1 METHODS
 
@@ -492,6 +873,80 @@ sub _correct_message {
     return $msg;
 }
 
+=head2 render
+
+will be called by process to render things. If render is called with extra
+arguments, they are treated as wrapper, template, etc...
+
+returns the template result
+
+=cut
+
+sub render {
+    my $self = shift;
+    my $c = shift;
+    my @yield_list = @_;
+    
+    #
+    # beautify dies by replacing our strange file names
+    # with the relative path of the wrapper or template
+    #
+    local $SIG{__DIE__}  = \&_handle_die;
+    local $SIG{__WARN__} = sub { _handle_warn($c->log, @_) };
+    
+    #
+    # must render - find template and wrapper
+    # unless given as arguments
+    #
+    if (!scalar(@_)) {
+        my $template = $c->stash->{template}
+            ||  $c->action . $self->extension;
+        if (!defined $template) {
+            $c->log->error('No template specified for rendering');
+            return 0;
+        } else {
+            my $path = $self->_find_template($c, $template);
+            my $sub;
+            if ($path && ($sub = $self->_compile_template($c, $path))) {
+                $c->log->debug("FOUND template '$template' -> '$path'") if $c->debug;
+                push @yield_list, $sub;
+            } else {
+                $c->log->error("requested template '$template' not found or not compilable");
+                return 0;
+            }
+        }
+        
+        my $wrapper = exists($c->stash->{wrapper})
+            ? $c->stash->{wrapper}
+            : $self->wrapper;
+        if ($wrapper) {
+            my $path = $self->_find_template($c, $wrapper, $template); ### FIXME: must chop off last part from $template
+            my $sub;
+            if ($path && ($sub = $self->_compile_template($c, $path))) {
+                unshift @yield_list, $sub;
+            } else {
+                $c->log->error("wrapper '$wrapper' not found or not compilable");
+            }
+        } else {
+            $c->log->info('no wrapper wanted') if $c->debug;
+        }
+    }
+    
+    #
+    # run render-sequence
+    #
+    $c->stash->{yield} ||= {};
+    $c->stash->{yield}->{content} = \@yield_list;
+    init_markup($self, $c);
+    
+    Catalyst::View::ByCode::Renderer::yield();
+    
+    my $content = get_markup();
+    clear_markup;
+    
+    return $content;
+}
+
 =head2 process
 
 fulfill the request (called from Catalyst)
@@ -501,62 +956,8 @@ fulfill the request (called from Catalyst)
 sub process {
     my $self = shift;
     my $c = shift;
-
-    #
-    # beautify dies by replacing our strange file names
-    # with the relative path of the wrapper or template
-    #
-    local $SIG{__DIE__} = \&_handle_die;
-    local $SIG{__WARN__} = sub { _handle_warn($c->log, @_) };
     
-    #
-    # must render - find template and wrapper
-    #
-    my @yield_list = ();
-    
-    my $template = $c->stash->{template}
-        ||  $c->action . $self->extension;
-    if (!defined $template) {
-        $c->log->error('No template specified for rendering');
-        return 0;
-    } else {
-        my $path = $self->_find_template($c, $template);
-        my $sub;
-        if ($path && ($sub = $self->_compile_template($c, $path))) {
-            $c->log->debug("FOUND template '$template' -> '$path'") if $c->debug;
-            push @yield_list, $sub;
-        } else {
-            $c->log->error("requested template '$template' not found or not compilable");
-            return 0;
-        }
-    }
-
-    my $wrapper = exists($c->stash->{wrapper})
-        ? $c->stash->{wrapper}
-        : $self->wrapper;
-    if ($wrapper) {
-        my $path = $self->_find_template($c, $wrapper, $template); ### FIXME: must chop off last part from $template
-        my $sub;
-        if ($path && ($sub = $self->_compile_template($c, $path))) {
-            unshift @yield_list, $sub;
-        } else {
-            $c->log->error("wrapper '$wrapper' not found or not compilable");
-        }
-    } else {
-        $c->log->info('no wrapper wanted') if $c->debug;
-    }
-
-    #
-    # run render-sequence
-    #
-    $c->stash->{yield} ||= {};
-    $c->stash->{yield}->{content} = \@yield_list;
-    init_markup($self, $c);
-    
-    Catalyst::View::ByCode::Renderer::yield;
-    
-    $c->response->body(get_markup());
-    clear_markup;
+    $c->response->body( $self->render($c, @_) );
     
     return 1; # indicate success
 }
