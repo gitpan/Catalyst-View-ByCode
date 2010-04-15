@@ -1,5 +1,7 @@
 package Catalyst::View::ByCode::Markup::Tag;
-$Catalyst::View::ByCode::Markup::Tag::VERSION = '0.10';
+BEGIN {
+  $Catalyst::View::ByCode::Markup::Tag::VERSION = '0.11';
+}
 use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::AttributeHelpers;

@@ -23,6 +23,7 @@ my %WriteMakefileArgs = (
                                              'Test::Exception' => '0',
                                              'parent' => '0',
                                              'FindBin' => '0',
+                                             'Catalyst::Controller' => '0',
                                              'Path::Class' => '0',
                                              'Catalyst' => '0',
                                              'Catalyst::Runtime' => '0',
@@ -30,7 +31,7 @@ my %WriteMakefileArgs = (
                                            },
                        'ABSTRACT' => 'Templating using pure Perl code',
                        'EXE_FILES' => [],
-                       'VERSION' => '0.10',
+                       'VERSION' => '0.11',
                        'PREREQ_PM' => {
                                         'Catalyst::View' => '0',
                                         'YAML' => '0.68',

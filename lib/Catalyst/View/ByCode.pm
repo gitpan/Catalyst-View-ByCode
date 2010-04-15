@@ -1,4 +1,7 @@
 package Catalyst::View::ByCode;
+BEGIN {
+  $Catalyst::View::ByCode::VERSION = '0.11';
+}
 
 use Moose;
 extends 'Catalyst::View';
@@ -33,8 +36,6 @@ use UUID::Random;
 use Path::Class::File;
 use File::Spec;
 
-our $VERSION = '0.10';
-
 our $compiling_package; # local() ized during a compile
 
 =head1 NAME
@@ -43,12 +44,12 @@ Catalyst::View::ByCode - Templating using pure Perl code
 
 =head1 VERSION
 
-version 0.10
+version 0.11
 
 =head1 SYNOPSIS
 
     # 1) use the helper to create your View
-    myapp_create.pl view ByCode ByCode
+    ./script/myapp_create.pl view ByCode ByCode
 
 
     # 2) inside your Controllers do business as usual:
@@ -66,7 +67,7 @@ version 0.10
     }
 
 
-    # 3) create a simple template eg 'root/bycode/hello.pl
+    # 3) create a simple template eg 'root/bycode/hello.pl'
     # REMARK: 
     #    use 'c' instead of '$c'
     #    prefer 'stash->{...}' to 'c->stash->{...}'
@@ -99,9 +100,12 @@ version 0.10
     <html>
       <head>
         <title>Hello ByCode!</title>
-        <script src="http://localhost:3000/js/site.js" type="text/javascript">
+        <script src="http://localhost:3000/js/site.js"
+                type="text/javascript">
         </script>
-        <link rel="stylesheet" href="http://localhost:3000/css/site.css" type="text/css" />
+        <link rel="stylesheet"
+              href="http://localhost:3000/css/site.css"
+              type="text/css" />
       </head>
       <body>
         <div id="header" style="noprint">
@@ -267,11 +271,11 @@ Every attribute may be added to the latest opened tag using the C<attr> sub. How
 
 =item id 'name'
 
-is equivalent to C<attr id => 'name'>
+is equivalent to C<<< attr id => 'name' >>>
 
 =item class 'class'
 
-is the same as C<attr class => 'class'>
+is the same as C<<< attr class => 'class' >>>
 
 However, the C<class> method is special. It allows to specify a
 space-separated string, a list of names or a combination of both. Class names
@@ -310,7 +314,7 @@ produces the same result as C<attr onhandler => 'some javascript code'>
 
 =item tricky arguments and CamelCase
 
-    div top.noprint.silver(style => {marginTop => '20px'}) {'content'};
+    div top.noprint.silver(style => {marginTop => '20px'}) {'foo'};
 
 C<marginTop> or C<margin_top> will get converted to C<margin-top>.
 
@@ -360,7 +364,7 @@ latest open tag and sets or gets its attribute(s):
 
     div {
         attr(style => 'foo:bar');  # set 'style' attribute
-        attr('id') # get 'id' attribute (or undef)
+        attr('id'); # get 'id' attribute (or undef)
         
         ... more things ...
         a {
@@ -377,7 +381,7 @@ package, it is automatically added to the package's C<@EXPORT> array.
 
     # define a block
     block navitem {
-        my $id = attr('id'); # get the block's ID attribute (or undef)
+        my $id   = attr('id');
         my $href = attr('href');
         li {
             id $id if ($id);
@@ -405,8 +409,8 @@ example above.
 
 =item c
 
-holds the content of the C<$c> variable. Simple write C<c->some_method>
-instead of C<$c->some_method>.
+holds the content of the C<$c> variable. Simple write C<<< c->some_method >>>
+instead of C<<< $c->some_method >>>.
 
 =item class
 
@@ -418,12 +422,17 @@ the same markup:
     div { attr('class', 'class_name'); };
     div.class_name {};
 
+Using the C<class()> subroutine allows to prefix a class name with a C<+> or
+C<-> sign. Every class name written after a C<+> sign will get appended to the
+class, each name written after a C<-> sign will be erased from the class.
+
 =item doctype
 
 a very simple way to generate a DOCTYPE declatation. Without any arguments, a
 HTML 4.0 doctype declaration will be generated. The arguments (if any) will
 consist of either of the words C<html> or C<xhtml> optionally followed by one
-or more version digits.
+or more version digits. The doctypes used are taken from
+L<http://hsivonen.iki.fi/doctype/>.
 
 some examples:
 
@@ -435,7 +444,7 @@ some examples:
     doctype 'html 4strict'; # HTML 4.01 strict
 
     doctype 'xhtml';        # XHTML 1.0
-    doctype 'xhtml 1 1';    # XHTML 1.0
+    doctype 'xhtml 1 1';    # XHTML 1.1
 
 =item id
 
@@ -486,7 +495,7 @@ generates a series of C<param> tags.
 
 =item stash
 
-is a shortcut for C<c->stash>.
+is a shortcut for C<<< c->stash >>>.
 
 =item template
 
@@ -517,7 +526,7 @@ These values are possible:
 
 =item just a symbolic name
 
-if a symbolic name is given, this name is searched in the C<<stash->{yield}->{...} >>
+if a symbolic name is given, this name is searched in the C<<< stash->{yield}->{...} >>>
 hashref. If it is found, the file-name or subref stored there will be executed
 and included at the given point.
 
@@ -560,12 +569,14 @@ the special sub C<block_content>. A simple example makes this clearer:
 
     # define a block:
     block infobox {
-        # attr() values may be read before the first opening tag
+        # attr() values must be read before generating markup
         my $headline = attr('headline') || 'untitled';
-        my $id = attr('id');
-        my $class = attr('class');
+        my $id       = attr('id');
+        my $class    = attr('class');
+        
+        # generate some content
         div.infobox {
-            id $id if ($id);
+            id $id       if ($id);
             class $class if ($class);
             
             div.head { $headline };
@@ -574,7 +585,9 @@ the special sub C<block_content>. A simple example makes this clearer:
     };
     
     # later we use the block:
-    infobox some_id.someclass(headline => 'Our Info') { 'just my 2 cents' };
+    infobox some_id.someclass(headline => 'Our Info') {
+        'just my 2 cents' 
+    };
     
     # this HTML will get generated:
     <div class="someclass" id="some_id">
@@ -597,7 +610,8 @@ A simple configuration of a derived Controller could look like this:
         # Set the location for .pl files (default: root/bycode)
         root_dir => cat_app->path_to( 'root', 'bycode' ),
         
-        # This is your wrapper template located in root_dir (default: wrapper.pl)
+        # This is your wrapper template located in root_dir
+        # (default: wrapper.pl)
         wrapper => 'wrapper.pl',
         
         # all these modules are use()'d automatically
@@ -692,7 +706,7 @@ hashref that contains a template or an array-ref of templates for certain
 keys. Every template might be a path name leading to a template or a code-ref
 able that should be executed as the rendering code.
 
-C<$c->stash->{yield}->{content}> is an entry that is present by default. It
+C<<< $c->stash->{yield}->{content} >>> is an entry that is present by default. It
 contains in execution order the wrapper and the template to get executed.
 
 Other keys may be defined and populated in a similar way in order to provide
@@ -709,7 +723,7 @@ See L<TRICKS/Setting hooks at various places> below.
 If you construct a website that has lots of pages using the same layout, a
 wrapper will be your friend. Using the default settings, a simple file
 F<wrapper.pl> sitting in the root directory of your templates will do the job.
-As two alternatives you could set the C<$c->stash->{wrapper}> variable to
+As two alternatives you could set the C<<< $c->stash->{wrapper} >>> variable to
 another path name or specify a wrapper path as a config setting.
 
     # wrapper.pl
@@ -760,15 +774,63 @@ If you need to sometimes add things at different places, simply mark these posit
 In the example above, some hooks are defined. In a controller, for the hook
 C<after_navigation>, a path to a template is filled. This template will get
 executed at the specified position and its content added before continuing
-with the wrapper template.
+with the wrapper template. If a hook's name is not a part of the
+C<<< stash->{yield} >>> hashref, it will be ignored. However, an I<info> log entry
+will be generated.
 
 =head2 Avoiding repetitions
 
-TODO: describe include directive
+Every template is a perl module. It resides in its own package and every thing
+you are not used to type is mangled into your source code before compilation.
+It is up to you to C<use> every other module you like. A simple module could
+look like this:
+
+    package MyMagicPackage;
+    use strict;
+    use warnings;
+    use base qw(Exporter);
+    
+    use Catalyst::View::ByCode::Renderer ':default';
+    
+    our @EXPORT = qw(my_sub);
+    
+    sub my_sub {
+        # do something...
+    }
+    
+    block my_block {
+        # do something else
+    };
+    
+    1;
+
+Using the Renderer class above gives your module everything a template has.
+You can use every Tag-sub you want.
+
+To use this module in every template you write within an application you
+simply populate the config of your View:
+
+    __PACKAGE__->config(
+        include => [ qw(MyMagicPackage) ]
+    );
 
 =head2 Including FormFu or FormHandler
 
-TODO: example of stringification
+If you are using one of the above packages to render forms, generating the
+markup is done by the libraries. There are a couple of ways to get the
+generated markup into our code:
+
+    # assume stash->{form} contains a form object
+    # all of these ways will work:
+    
+    # let the form object render itself
+    print RAW stash->{form}->render();
+    
+    # use the form object's stringification
+    print RAW "${\stash->{form}}";
+    
+    # inside any tag, let me auto-stringify
+    div { stash->{form} };
 
 =head2 Create your own error page
 
@@ -781,15 +843,25 @@ Very simple:
 
 =head2 Shortcuts
 
-TODO: input(disabled => 1) instead of input(disabled => 'disabled')
+Some attributes behave in a way that looks intuitive but also generates
+correct markup. The examples below do not need futher explanation.
 
-TODO: input(checked => 1) instead of input(disabled => 'checked')
+    # both things generate the same markup:
+    input(disabled => 1);
+    input(disabled => 'disabled');
+    
+    input(checked => 1);
+    input(disabled => 'checked');
 
-TODO: option(selected => 1) instead of option(selected => 'selected')
+    option(selected => 1);
+    option(selected => 'selected');
 
-    some_tag.some_class {
-        class '+another_class';
-    }
+    textarea(readonly => 1);
+    textarea(readonly => 'readonly');
+    
+    # remember that choice() generates a E<lt>selectE<gt> tag...
+    choice(multiple => 1);
+    choice(multiple => 'multiple');
 
 
 =head1 METHODS
@@ -957,7 +1029,7 @@ sub process {
     my $self = shift;
     my $c = shift;
     
-    $c->response->body( $self->render($c, @_) );
+    $c->response->body( $self->render($c) );
     
     return 1; # indicate success
 }
@@ -992,11 +1064,11 @@ sub _find_template {
     my $start_dir = shift || '';
     
     my $root_dir = $c->path_to($self->root_dir);
-    # my $root_dir = $self->root_dir;
     my $ext = $self->extension;
     $ext =~ s{\A \.+}{}xms;
     my $count = 100; # prevent endless loops in case of logic errors
     while (--$count > 0) {
+        ### FIXME: these constructs will probably fail under Windows.
         if (-f "$root_dir/$start_dir/$template") {
             # we found it
             return $start_dir ? "$start_dir/$template" : $template;

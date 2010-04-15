@@ -1,5 +1,7 @@
 package Catalyst::View::ByCode::Markup::Document;
-$Catalyst::View::ByCode::Markup::Document::VERSION = '0.10';
+BEGIN {
+  $Catalyst::View::ByCode::Markup::Document::VERSION = '0.11';
+}
 use Moose;
 use MooseX::AttributeHelpers;
 use Catalyst::View::ByCode::Markup::Element;
