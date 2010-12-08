@@ -14,13 +14,13 @@ build_requires:
   parent: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.31
-generated_by: 'Dist::Zilla version 2.100991'
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 4.102221, CPAN::Meta::Converter version 2.102160'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
 name: Catalyst-View-ByCode
-recommends: {}
 requires:
   B::Hooks::EndOfScope: 0
   Catalyst::Component::ApplicationAttribute: 0
@@ -36,9 +36,9 @@ requires:
   List::Util: 1.21
   MIME::Base64: 3.07
   Moose: 1.0
-  Moose::Util::TypeConstraints: 0
   MooseX::AttributeHelpers: 0.23
   Path::Class::File: 0
+  Scalar::Util: 0
   Test::Builder: 0.86
   Test::Builder::Tester: 1.18
   Test::Exception: 0.27
@@ -46,5 +46,4 @@ requires:
   Test::More: 0.86
   UUID::Random: 0.04
   YAML: 0.68
-  overload: 0
-version: 0.11
+version: 0.12

@@ -1,7 +1,4 @@
 package Catalyst::View::ByCode::Markup::Element;
-BEGIN {
-  $Catalyst::View::ByCode::Markup::Element::VERSION = '0.11';
-}
 use Moose;
 
 has content => (

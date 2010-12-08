@@ -1,7 +1,4 @@
 package Catalyst::View::ByCode::Markup::Tag;
-BEGIN {
-  $Catalyst::View::ByCode::Markup::Tag::VERSION = '0.11';
-}
 use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::AttributeHelpers;
@@ -115,11 +112,7 @@ override as_string => sub {
         $result .= "\n" . (' ' x ($INDENT_STEP * $indent_level));
     }
     $result .= qq{<${\$self->tag}};
-    $result .= m{\A(?:disabled|checked|multiple|readonly|selected)\z}xms
-          # auto-expand attributes when true
-        ? ($self->attr->{$_} ? qq{ $_="$_"} : '')
-          # keep attributes as they are
-        : qq{ ${\_key($_)}="${\$self->_html_escape(_stringify_attr_value($self->attr->{$_}))}"}
+    $result .= qq{ ${\_key($_)}="${\$self->_html_escape(_stringify_attr_value($self->attr->{$_}))}"}
         for sort keys(%{$self->attr});
     
     # distinguish between empty tags and content-containing ones...

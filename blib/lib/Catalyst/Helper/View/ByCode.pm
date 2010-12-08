@@ -1,17 +1,10 @@
 package Catalyst::Helper::View::ByCode;
-BEGIN {
-  $Catalyst::Helper::View::ByCode::VERSION = '0.12';
-}
 
 use strict;
 
 =head1 NAME
 
 Catalyst::Helper::View::ByCode - Helper for ByCode Views
-
-=head1 VERSION
-
-version 0.12
 
 =head1 SYNOPSIS
 
@@ -55,8 +48,9 @@ __DATA__
 __compclass__
 package [% class %];
 
-use Moose;
-BEGIN { extends 'Catalyst::View::ByCode' }
+use strict;
+use warnings;
+use parent 'Catalyst::View::ByCode';
 
 __PACKAGE__->config(
     # # Change default
@@ -65,7 +59,7 @@ __PACKAGE__->config(
     # # Set the location for .pl files
     # root_dir => 'root/bycode',
     # 
-    # # This is your wrapper template located in the 'root_dir'
+    # # This is your wrapper template located in the 'root/src'
     # wrapper => 'wrapper.pl',
     #
     # # specify packages to use in every template
