@@ -1,6 +1,6 @@
 package Catalyst::View::ByCode::Renderer;
 BEGIN {
-  $Catalyst::View::ByCode::Renderer::VERSION = '0.12';
+  $Catalyst::View::ByCode::Renderer::VERSION = '0.13';
 }
 use strict;
 use warnings;

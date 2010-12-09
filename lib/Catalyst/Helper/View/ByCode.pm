@@ -1,6 +1,6 @@
 package Catalyst::Helper::View::ByCode;
 BEGIN {
-  $Catalyst::Helper::View::ByCode::VERSION = '0.12';
+  $Catalyst::Helper::View::ByCode::VERSION = '0.13';
 }
 
 use strict;
@@ -11,7 +11,7 @@ Catalyst::Helper::View::ByCode - Helper for ByCode Views
 
 =head1 VERSION
 
-version 0.12
+version 0.13
 
 =head1 SYNOPSIS
 

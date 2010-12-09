@@ -55,7 +55,7 @@ my %WriteMakefileArgs = (
     'UUID::Random' => '0.04',
     'YAML' => '0.68'
   },
-  'VERSION' => '0.12',
+  'VERSION' => '0.13',
   'test' => {
     'TESTS' => 't/*.t'
   }
