@@ -1,6 +1,6 @@
 package Catalyst::View::ByCode::Renderer;
 BEGIN {
-  $Catalyst::View::ByCode::Renderer::VERSION = '0.13';
+  $Catalyst::View::ByCode::Renderer::VERSION = '0.15';
 }
 use strict;
 use warnings;
@@ -12,7 +12,7 @@ use Scalar::Util 'blessed';
 use HTML::Tagset;
 # use HTML::Entities; ### TODO: think about -- but pollutes our namespaces
 
-our @EXPORT_OK  = qw(clear_markup init_markup get_markup markup_object);
+our @EXPORT_OK  = qw(clear_markup init_markup get_markup);
 
 our @EXPORT     = qw(template block block_content
                      load
@@ -21,7 +21,7 @@ our @EXPORT     = qw(template block block_content
                      attr
                      class id on
                      stash c _
-                     doctype
+                     doctype boilerplate
                      nbsp
                     );
 our %EXPORT_TAGS = (
@@ -212,11 +212,11 @@ sub _render {
     join ('',
          map {
              ref($_) eq 'ARRAY'
-                 # a Tag is [ 'tag', {attrs}, content, ... ]
+               # a Tag is [ 'tag', {attrs}, content, ... ]
                ? do {
                    my $attr = $_->[1];
                    $_->[0]
-                       # tag structure is named => <tag ...>
+                     # tag structure is named => <tag ...>
                      ? "<$_->[0]" .
                        # render attribute(s)
                        join('', 
@@ -247,8 +247,8 @@ sub _render {
                                     }
                                     $v =~ s{($NEED_ESCAPE)}{'&#' . ord($1) . ';'}oexmsg;
                                     
-                                    # convert key into unified version.
-                                    no warnings; # $1 might be undef, perl5.12 warns anyway... strange.
+                                    # convert key into dash-separaed version,
+                                    # dataId -> data-id, data_id => data-id
                                     $k =~ s{([A-Z])|_}{-\l$1}oxmsg;
                                     
                                     # compose attr="value"
@@ -265,11 +265,12 @@ sub _render {
                           : '>' . 
                             _render(@{$_}[2 .. $#$_]) .
                             "</$_->[0]>")
-                       # tag is unnamed -- just render content
+                     
+                     # tag is unnamed -- just render content
                      : _render(@{$_}[2 .. $#$_])
                  }
-                 
-                 # everything else is stringified
+               
+               # everything else is stringified
                : "$_"
          } @_);
 }
@@ -323,8 +324,8 @@ sub block($&;@) {
 #
 # execute a block's content
 #
-sub block_content() {
-    push @{$top[-1]}, $block_content->() if ($block_content);
+sub block_content {
+    push @{$top[-1]}, $block_content->(@_) if ($block_content);
     return;
 }
 
@@ -531,9 +532,11 @@ sub doctype {
 
     # see http://hsivonen.iki.fi/doctype/ for details on these...
     my @doctype_finder = (
+        [qr(html(?:\W*5))                 => 'html5'],
+        [qr(html)                         => 'html5'],
+
         [qr(html(?:\W*4[0-9.]*)?\W*s)     => 'html4_strict'],
         [qr(html(?:\W*4[0-9.]*)?\W*[tl])  => 'html4_loose'],
-        [qr(html)                         => 'html4'],
 
         [qr(xhtml\W*1\W*1)                => 'xhtml1_1'],
         [qr(xhtml(?:\W*1[0-9.]*)?\W*s)    => 'xhtml1_strict'],
@@ -542,7 +545,7 @@ sub doctype {
     );
 
     my %doctype_for = (
-        default      => q{<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">},
+        default      => q{<!DOCTYPE html>},
         html5        => q{<!DOCTYPE html>},
         html4        => q{<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">},
         html4_strict => q{<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" } .
@@ -570,13 +573,26 @@ sub doctype {
     push @{$top[-1]}, $doctype_for{$doctype};
 }
 
+sub boilerplate(;&) {
+    push @{$top[-1]}, <<HTML;
+<!--[if lt IE 7 ]> <html class="no-js ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]>    <html class="no-js ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]>    <html class="no-js ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+HTML
+
+    $_[0]->() if ($_[0]);
+    
+    push @{$top[-1]}, '</html>';
+}
+
 ######################################## Locale stuff
 #
 # get a localized version of something
 #
 {
 no warnings 'redefine';
-sub _ { return $c->localize(@_); }
+sub _ { return $c->localize(@_) }
 }
 
 sub nbsp { "\x{00a0}" } # bad hack in the moment...
@@ -586,17 +602,17 @@ sub nbsp { "\x{00a0}" } # bad hack in the moment...
 #
 sub _construct_functions {
     my $namespace  = shift;
-
-    no warnings 'redefine';
-
+    
+    no warnings 'redefine'; # in case of a re-compile.
+    
     my %declare;
-
+    
     # tags with content are treated the same as tags without content
     foreach my $tag_name (grep { m{\A \w}xms }
                           keys(%HTML::Tagset::isKnown)) {
         my $sub_name = $change_tags{$tag_name}
             || $tag_name;
-
+        
         # install a tag-named sub in caller's namespace
         no strict 'refs';
         *{"$namespace\::$sub_name"} = sub (;&@) {
@@ -605,15 +621,17 @@ sub _construct_functions {
             if ($_[0]) {
                 push @top, $top[-1]->[-1];
                 
+                #### TODO: find out why ->render does not work for HTML::FormFu !!!
+                
                 my $text = $_[0]->(@_);
                 if (ref($text) && UNIVERSAL::can($text, 'render')) {
-                    $text = $text->render;
-                }
-                if (defined($text) && $text ne '') {
+                    push @{$top[-1]}, $text->render;
+                } else {
+                    no warnings 'uninitialized'; # we might see undef values
                     $text =~ s{($NEED_ESCAPE)}{'&#' . ord($1) . ';'}oexmsg;
-                    
                     push @{$top[-1]}, $text;
                 }
+                
                 pop @top;
             }
             return;
@@ -625,7 +643,7 @@ sub _construct_functions {
             const => Catalyst::View::ByCode::Declare::tag_parser
         };
     }
-
+    
     # add logic for block definitions
     $declare{block} = {
         const => Catalyst::View::ByCode::Declare::block_parser

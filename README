@@ -1,11 +1,11 @@
 
 
 This archive contains the distribution Catalyst-View-ByCode,
-version 0.13:
+version 0.15:
 
   Templating using pure Perl code
 
-This software is copyright (c) 2010 by Wolfgang Kinkeldei.
+This software is copyright (c) 2011 by Wolfgang Kinkeldei.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
