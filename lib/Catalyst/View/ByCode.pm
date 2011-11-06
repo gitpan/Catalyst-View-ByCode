@@ -1,6 +1,6 @@
 package Catalyst::View::ByCode;
-BEGIN {
-  $Catalyst::View::ByCode::VERSION = '0.15';
+{
+  $Catalyst::View::ByCode::VERSION = '0.16';
 }
 
 use Moose;
@@ -44,7 +44,7 @@ Catalyst::View::ByCode - Templating using pure Perl code
 
 =head1 VERSION
 
-version 0.15
+version 0.16
 
 =head1 SYNOPSIS
 
@@ -1146,7 +1146,6 @@ sub _compile_template {
     }
     
     $c->log->debug('can run: ', $package->can($sub_name)) if $c->debug;
-    
     return $package->can($sub_name);
 }
 

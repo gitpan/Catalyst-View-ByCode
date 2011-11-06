@@ -1,6 +1,6 @@
 package Catalyst::View::ByCode::Declare;
-BEGIN {
-  $Catalyst::View::ByCode::Declare::VERSION = '0.15';
+{
+  $Catalyst::View::ByCode::Declare::VERSION = '0.16';
 }
 use strict;
 use warnings;
@@ -246,7 +246,11 @@ sub install_sub {
 
     no strict 'refs';
     no warnings 'redefine';
+    ### deleting does not warn, but aliassing is still in action
+    # http://www252.pair.com/comdog/mastering_perl/Chapters/08.symbol_tables.html
+    # delete ${"$package\::"}{$sub_name};
     *{"$package\::$sub_name"} = $code;
+    # cannot modify: *{"$package\::$sub_name"}{CODE} = $code;
     push @{"$package\::EXPORT"}, $sub_name;
     push @{"$package\::$add_to_array"}, $sub_name if ($add_to_array);
     ### right?? push @{"$package\::$EXPORT_TAGS\{default\}"}, $sub_name;

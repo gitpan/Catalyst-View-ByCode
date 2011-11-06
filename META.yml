@@ -13,9 +13,9 @@ build_requires:
   Test::More: 0
   parent: 0
 configure_requires:
-  ExtUtils::MakeMaker: 6.31
+  ExtUtils::MakeMaker: 6.30
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 4.200004, CPAN::Meta::Converter version 2.110580'
+generated_by: 'Dist::Zilla version 4.300003, CPAN::Meta::Converter version 2.112621'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -27,7 +27,7 @@ requires:
   Catalyst::Runtime: 5.80
   Catalyst::Utils: 0
   Catalyst::View: 0
-  Devel::Declare: 0.005007
+  Devel::Declare: 0.006008
   Exporter: 0
   File::Spec: 0
   FindBin: 1.49
@@ -46,4 +46,7 @@ requires:
   Test::More: 0.86
   UUID::Random: 0.04
   YAML: 0.68
-version: 0.15
+  base: 0
+  strict: 0
+  warnings: 0
+version: 0.16
