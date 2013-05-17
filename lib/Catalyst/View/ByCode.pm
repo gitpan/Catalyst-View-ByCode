@@ -1,6 +1,6 @@
 package Catalyst::View::ByCode;
 {
-  $Catalyst::View::ByCode::VERSION = '0.17';
+  $Catalyst::View::ByCode::VERSION = '0.18';
 }
 
 use Moose;
@@ -44,7 +44,7 @@ Catalyst::View::ByCode - Templating using pure Perl code
 
 =head1 VERSION
 
-version 0.17
+version 0.18
 
 =head1 SYNOPSIS
 
@@ -376,7 +376,7 @@ latest open tag and sets or gets its attribute(s):
 
 =item block
 
-define a block that may be uses like a tag. If a block is defined in a
+define a block that may be used like a tag. If a block is defined in a
 package, it is automatically added to the package's C<@EXPORT> array.
 
     # define a block
@@ -391,8 +391,8 @@ package, it is automatically added to the package's C<@EXPORT> array.
         };
     };
     
-    # use a block like a tag
-    block some_id (href => 'http://bar.baz') {
+    # use the block like a tag
+    navitem some_id (href => 'http://bar.baz') {
         # this gets rendered by block_content() -- see above
         'some text or other content';
     }
@@ -429,15 +429,15 @@ class, each name written after a C<-> sign will be erased from the class.
 =item doctype
 
 a very simple way to generate a DOCTYPE declatation. Without any arguments, a
-HTML 4.0 doctype declaration will be generated. The arguments (if any) will
+HTML 5 doctype declaration will be generated. The arguments (if any) will
 consist of either of the words C<html> or C<xhtml> optionally followed by one
 or more version digits. The doctypes used are taken from
 L<http://hsivonen.iki.fi/doctype/>.
 
 some examples:
 
-    doctype;                # HTML 4.0
-    doctype 'html';         # HTML 4.01
+    doctype;                # HTML 5
+    doctype 'html';         # HTML 5
     doctype html => 4;      # HTML 4.01
     doctype 'html 4';       # HTML 4.01
     doctype 'html 4s';      # HTML 4.01 strict
@@ -851,7 +851,10 @@ correct markup. The examples below do not need futher explanation.
     input(disabled => 'disabled');
     
     input(checked => 1);
-    input(disabled => 'checked');
+    input(checked => 'checked');
+
+    input(required => 1);
+    input(required => 'required');
 
     option(selected => 1);
     option(selected => 'selected');
@@ -1146,6 +1149,7 @@ sub _compile_template {
     }
     
     $c->log->debug('can run: ', $package->can($sub_name)) if $c->debug;
+    
     return $package->can($sub_name);
 }
 
