@@ -1,6 +1,6 @@
 package Catalyst::View::ByCode;
 {
-  $Catalyst::View::ByCode::VERSION = '0.18';
+  $Catalyst::View::ByCode::VERSION = '0.19';
 }
 
 use Moose;
@@ -44,7 +44,7 @@ Catalyst::View::ByCode - Templating using pure Perl code
 
 =head1 VERSION
 
-version 0.18
+version 0.19
 
 =head1 SYNOPSIS
 
@@ -866,6 +866,9 @@ correct markup. The examples below do not need futher explanation.
     choice(multiple => 1);
     choice(multiple => 'multiple');
 
+beside these examples all currently defined HTML-5 boolean attributes are
+available: disabled, checked, hidden, inert, multiple, readonly, selected,
+required.
 
 =head1 METHODS
 

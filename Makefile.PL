@@ -35,10 +35,11 @@ my %WriteMakefileArgs = (
     "Test::Harness" => "3.14",
     "Test::More" => "0.86",
     "UUID::Random" => "0.04",
-    "YAML" => "0.68"
+    "YAML" => "0.68",
+    "ok" => 0
   },
   "TEST_REQUIRES" => {},
-  "VERSION" => "0.18",
+  "VERSION" => "0.19",
   "test" => {
     "TESTS" => "t/*.t"
   }
