@@ -1,6 +1,6 @@
 package Catalyst::View::ByCode::Renderer;
 {
-  $Catalyst::View::ByCode::Renderer::VERSION = '0.19';
+  $Catalyst::View::ByCode::Renderer::VERSION = '0.20';
 }
 use strict;
 use warnings;
@@ -257,13 +257,16 @@ sub _render {
                                 my $k = $_;
                                 my $v = $attr->{$k};
 
-                                if ($k eq 'disabled' ||
-                                    $k eq 'checked'  ||
-                                    $k eq 'hidden'   ||
-                                    $k eq 'inert'    ||
-                                    $k eq 'multiple' ||
-                                    $k eq 'readonly' ||
-                                    $k eq 'selected' ||
+                                if ($k eq 'autofocus'      ||
+                                    $k eq 'checked'        ||
+                                    $k eq 'disabled'       ||
+                                    $k eq 'formnovalidate' ||
+                                    $k eq 'hidden'         ||
+                                    $k eq 'inert'          ||
+                                    $k eq 'multiple'       ||
+                                    $k eq 'novalidate'     ||
+                                    $k eq 'readonly'       ||
+                                    $k eq 'selected'       ||
                                     $k eq 'required') {
                                     # special handling for magic names that require magic values
                                     $v ? qq{ $k="$k"} : '';
@@ -481,7 +484,7 @@ sub load {
 sub yield(;*@) {
     my $yield_name = shift || 'content';
 
-    $c->log->debug("yield '$yield_name' executing...") if ($c->debug);
+    $c->log->debug("yield '$yield_name' executing...") if  $c->debug;
 
     _yield(exists($c->stash->{yield}->{$yield_name})
             ? $c->stash->{yield}->{$yield_name}

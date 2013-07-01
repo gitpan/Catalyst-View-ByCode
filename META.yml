@@ -30,4 +30,4 @@ requires:
   UUID::Random: 0.04
   YAML: 0.68
   ok: 0
-version: 0.19
+version: 0.20

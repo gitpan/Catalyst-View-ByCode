@@ -1,6 +1,6 @@
 package Catalyst::View::ByCode;
 {
-  $Catalyst::View::ByCode::VERSION = '0.19';
+  $Catalyst::View::ByCode::VERSION = '0.20';
 }
 
 use Moose;
@@ -44,7 +44,7 @@ Catalyst::View::ByCode - Templating using pure Perl code
 
 =head1 VERSION
 
-version 0.19
+version 0.20
 
 =head1 SYNOPSIS
 
@@ -1151,9 +1151,12 @@ sub _compile_template {
         $self->__compile($c, $full_path => $package);
     }
     
-    $c->log->debug('can run: ', $package->can($sub_name)) if $c->debug;
+    # important: must stringify method to avoid Log::Log4perl::Catalyst
+    #            to call it.
+    my $method = $package->can($sub_name);
+    $c->log->debug("can run: $method") if $c->debug;
     
-    return $package->can($sub_name);
+    return $method;
 }
 
 # low level compile
