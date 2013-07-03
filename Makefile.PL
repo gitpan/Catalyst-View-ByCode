@@ -28,7 +28,6 @@ my %WriteMakefileArgs = (
     "List::Util" => "1.21",
     "MIME::Base64" => "3.07",
     "Moose" => "1.0",
-    "MooseX::AttributeHelpers" => "0.23",
     "Test::Builder" => "0.86",
     "Test::Builder::Tester" => "1.18",
     "Test::Exception" => "0.27",
@@ -39,7 +38,7 @@ my %WriteMakefileArgs = (
     "ok" => 0
   },
   "TEST_REQUIRES" => {},
-  "VERSION" => "0.20",
+  "VERSION" => "0.21",
   "test" => {
     "TESTS" => "t/*.t"
   }

@@ -1,6 +1,6 @@
 package Catalyst::View::ByCode::Declare;
 {
-  $Catalyst::View::ByCode::Declare::VERSION = '0.20';
+  $Catalyst::View::ByCode::Declare::VERSION = '0.21';
 }
 use strict;
 use warnings;
