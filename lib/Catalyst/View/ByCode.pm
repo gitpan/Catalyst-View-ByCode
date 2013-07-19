@@ -1,6 +1,6 @@
 package Catalyst::View::ByCode;
 {
-  $Catalyst::View::ByCode::VERSION = '0.22';
+  $Catalyst::View::ByCode::VERSION = '0.23';
 }
 
 use Moose;
@@ -44,7 +44,7 @@ Catalyst::View::ByCode - Templating using pure Perl code
 
 =head1 VERSION
 
-version 0.22
+version 0.23
 
 =head1 SYNOPSIS
 
@@ -317,6 +317,19 @@ produces the same result as C<attr onhandler => 'some javascript code'>
     div top.noprint.silver(style => {marginTop => '20px'}) {'foo'};
 
 C<marginTop> or C<margin_top> will get converted to C<margin-top>.
+
+=item handling scalar refs
+
+    div (data_something => \'<abcd>') { ... };
+
+will not escape the ref-text <abcd>.
+
+=item code refs
+
+    div (id => \&get_next_id) { ... };
+
+will call get_next_id() and set its return value as a value for id and in case
+of special characters, escapes it.
 
 =back
 

@@ -1,6 +1,6 @@
 package Catalyst::View::ByCode::Renderer;
 {
-  $Catalyst::View::ByCode::Renderer::VERSION = '0.22';
+  $Catalyst::View::ByCode::Renderer::VERSION = '0.23';
 }
 use strict;
 use warnings;
@@ -272,19 +272,25 @@ sub _render {
                                     $v ? qq{ $k="$k"} : '';
                                 } else {
                                     # not a special attribute name
-                                    if (ref $v) {
+                                    if (ref $v eq 'SCALAR') {
+                                        $v = $$v;
+                                    } elsif (ref $v) {
                                         # handle ref values differently
-                                        $v = ref($v) eq 'ARRAY'
-                                             ? join(' ', @{$v})
-                                           : ref($v) eq 'HASH'
-                                             ? join(';',
+                                        $v = ref $v eq 'ARRAY'
+                                            ? join(' ', @{$v})
+                                          : ref $v eq 'HASH'
+                                            ? join(';',
                                                     map { my $k = $_;
-                                                          $k =~ s{([A-Z])|_}{-\l$1}oxmsg;
-                                                          "$k:$v->{$_}" }
+                                                        $k =~ s{([A-Z])|_}{-\l$1}oxmsg;
+                                                        "$k:$v->{$_}" }
                                                     keys %{$v})
-                                           : "$v";
+                                          : ref $v eq 'CODE'
+                                            ? $v->()
+                                          : "$v";
+                                        $v =~ s{($NEED_ESCAPE)}{'&#' . ord($1) . ';'}oexmsg;
+                                    } else {
+                                        $v =~ s{($NEED_ESCAPE)}{'&#' . ord($1) . ';'}oexmsg;
                                     }
-                                    $v =~ s{($NEED_ESCAPE)}{'&#' . ord($1) . ';'}oexmsg;
 
                                     # convert key into dash-separaed version,
                                     # dataId -> data-id, data_id => data-id
